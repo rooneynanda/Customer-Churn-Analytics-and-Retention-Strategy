@@ -1,0 +1,47 @@
+select * from customers
+
+
+--customer_status
+select *,
+      case when days_since_last_purchase <=30 then 'Active'
+	       when days_since_last_purchase Between 31 and 60 then 'At Risk'
+		   Else 'Churned'
+		   End as customer_status
+from customers
+
+--View Table
+Create view customer_analysis as
+select *,
+      case when days_since_last_purchase <=30 then 'Active'
+	       when days_since_last_purchase Between 31 and 60 then 'At Risk'
+		   Else 'Churned'
+		   End as customer_status
+from customers
+
+select * from customer_analysis
+
+
+--Churn Rate
+select count(*) as total_customers,
+sum(case when customer_status = 'Churned' then 1 else 0 end) as churned,
+Round( sum (case when customer_status = 'Churned' then 1 else 0 end) * 100.0/
+       Count (*) , 2) as churn_rate
+from customer_analysis
+
+--Churn by Membership Type
+select membership_type,
+count(*) as total_customers,
+Round( sum (case when customer_status = 'Churned' then 1 else 0 end) * 100.0/
+       Count (*) , 2) as churn_rate
+from customer_analysis
+group by membership_type
+
+
+--Customer Behavior
+select customer_status,
+       avg(total_spend) as avg_spend,
+	   avg(items_purchased) as avg_items_purchased,
+	   avg(avg_rating) as avg_rating
+from customer_analysis
+group by customer_status
+
